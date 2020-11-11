@@ -1,10 +1,15 @@
+<?php
+require_once("include/db.php");
+require_once("include/functions.php");
+require_once("include/sessions.php");
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMS</title>
+    <title>Blog Posts</title>
     <script src="https://kit.fontawesome.com/aa21f35e2c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -55,13 +60,112 @@
     <header class="bg-dark text-white py-3">
         <div class="container">
             <div class="row">
-                <div class="col">
-
+                <div class="col-md-12 mb-2">
+                    <h1><i class="fas fa-blog"></i> Blog posts</h1>
+                </div>
+                <div class="col-lg-3 mb-2">
+                    <a href="addNewPost.php" class="btn btn-primary btn-block"><i class="fas fa-edit"></i> Add new post</a>
+                </div>
+                <div class="col-lg-3 mb-2">
+                    <a href="categories.php" class="btn btn-info btn-block"><i class="fas fa-folder-plus"></i> Add new category</a>
+                </div>
+                <div class="col-lg-3 mb-2">
+                    <a href="admins.php" class="btn btn-warning btn-block"><i class="fas fa-user-plus"></i> Add new admin</a>
+                </div>
+                <div class="col-lg-3 mb-2">
+                    <a href="comments.php" class="btn btn-success btn-block"><i class="fas fa-check"></i> Aprove comments</a>
                 </div>
             </div>
         </div>
     </header>
     <!-- Header end -->
+    <!-- Main area -->
+    <section class="container py-2 mb-4">
+        <div class="row">
+            <div class="col-lg-12">
+                <table class="table table-striped table-hover">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Date&Time</th>
+                            <th>Author</th>
+                            <th>Banner</th>
+                            <th>Comments</th>
+                            <th>Action</th>
+                            <th>Live Preview</th>
+                        </tr>
+                    </thead>
+                    <?php
+                    $connect;
+                    $sql = "SELECT * FROM post";
+                    $stmt = $connect->query($sql);
+                    $sr = 0;
+                    while ($dataRows = $stmt->fetch()) {
+                        $id = $dataRows["id"];
+                        $dateTime = $dataRows["dateTime"];
+                        $postTitle = $dataRows["title"];
+                        $category = $dataRows["category"];
+                        $admin = $dataRows["author"];
+                        $image = $dataRows["image"];
+                        $postText = $dataRows["post"];
+                        $sr++;
+
+
+                    ?>
+                        <tbody class="tbody-dark">
+                            <tr>
+                                <td><?php echo $sr ?></td>
+                                <td>
+                                    <?php
+                                    if (strlen($postTitle) > 20) {
+                                        $postTitle = substr($postTitle, 0, 7) . "...";
+                                    }
+                                    ?>
+                                    <?php echo $postTitle ?>
+                                </td>
+                                <td>
+                                <?php
+                                    if (strlen($category) > 6) {
+                                        $category = substr($category, 0, 6) . "...";
+                                    }
+                                    ?>
+                                    <?php echo $category ?>
+                                </td>
+                                <td>
+                                <?php
+                                    if (strlen($dateTime) > 11) {
+                                        $dateTime = substr($dateTime, 0, 11) . "...";
+                                    }
+                                    ?>
+                                    <?php echo $dateTime ?>
+                                </td>
+                                <td>
+                                <?php
+                                    if (strlen($admin) > 6) {
+                                        $admin = substr($admin, 0, 6) . "...";
+                                    }
+                                    ?>
+                                    <?php echo $admin ?>
+                                </td>
+                                <td><img src="uploads/<?php echo $image ?>" width="170px" height="50px"></td>
+                                <td>Comments</td>
+                                <td>
+                                    <a href="#"><span class="btn btn-warning mb-2">Edit</span></a>
+                                    <a href="#"><span class="btn btn-danger mb-2">Delete</span></a>
+                                </td>
+                                <td><a href="#"><span class="btn btn-primary">Live preview</span></a></td>
+                            </tr>
+                        </tbody>
+                    <?php
+                    }
+                    ?>
+                </table>
+            </div>
+        </div>
+    </section>
+    <!-- Main area end -->
     <!-- Footer -->
     <footer class="bg-dark text-white">
         <div class="container">
