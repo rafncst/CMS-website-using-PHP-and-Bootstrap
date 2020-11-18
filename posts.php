@@ -152,7 +152,7 @@ require_once("include/sessions.php");
                                 <td><img src="uploads/<?php echo $image ?>" width="170px" height="50px"></td>
                                 <td>Comments</td>
                                 <td>
-                                    <a href="#"><span class="btn btn-warning mb-2">Edit</span></a>
+                                    <a href="editPost.php?id=<?php echo $id ?>"><span class="btn btn-warning mb-2">Edit</span></a>
                                     <a href="#"><span class="btn btn-danger mb-2">Delete</span></a>
                                 </td>
                                 <td><a href="#"><span class="btn btn-primary">Live preview</span></a></td>

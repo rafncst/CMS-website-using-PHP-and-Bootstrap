@@ -61,10 +61,6 @@ require_once("include/sessions.php");
                 <h1>The complete CMS blog</h1>
                 <h1 class="lead">Complete responsive CMS website using PHP by Rafael Costa</h1>
                 <?php
-                echo errorMessage();
-                echo successMessage();
-                ?>
-                <?php
                 $connect;
                 // If search is set
                 if (isset($_GET["searchButton"])) {
@@ -72,10 +68,15 @@ require_once("include/sessions.php");
                     $sql = "SELECT * FROM post WHERE dateTime LIKE :searcH OR title LIKE :searcH OR category LIKE :searcH OR author LIKE :searcH OR post LIKE :searcH ORDER BY id DESC";
                     $stmt = $connect->prepare($sql);
                     $stmt->bindValue(":searcH", "%" . $searchQuery . "%");
-                    $stmt -> execute();
+                    $stmt->execute();
                 } else {
                     // Default sql query
-                    $sql = "SELECT * FROM post ORDER BY id desc";
+                    $idFromUrl = $_GET["id"];
+                    if (!isset($idFromUrl)) {
+                        $_SESSION["error"]= "Bad request!";
+                        redirectTo("blog.php");
+                    }
+                    $sql = "SELECT * FROM post WHERE id=$idFromUrl";
                     $stmt = $connect->query($sql);
                 }
                 while ($dataRows = $stmt->fetch()) {
@@ -95,17 +96,7 @@ require_once("include/sessions.php");
                             <small class="text-muted">Written by <?php echo htmlentities($admin) ?> on <?php echo htmlentities($dateTime) ?></small>
                             <span class="badge badge-dark text-light" style="float:right">Comments: 20</span>
                             <hr>
-                            <?php
-                            if (strlen($postText) > 150) {
-                                $postText = substr($postText, 0, 150) . "...";
-                            }
-                            ?>
                             <p><?php echo htmlentities($postText) ?></p>
-                            <a href="fullPost.php?id=<?php echo $id ?>" style="float:right">
-                                <span class="btn btn-info mr-4">
-                                    Read more >>
-                                </span>
-                            </a>
                         </div>
                     </div>
                 <?php
