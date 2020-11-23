@@ -2,9 +2,11 @@
 require_once("include/db.php");
 require_once("include/functions.php");
 require_once("include/sessions.php");
+$_SESSION["trackUrl"] = $_SERVER["PHP_SELF"];
+confirmLogin();
 if (isset($_POST["submit"])) {
     $category = $_POST["categoryTitle"];
-    $admin = "Rafael";
+    $admin = $_SESSION["username"];
     date_default_timezone_set("America/Vancouver");
     $currentTime = time();
     $dateTime = strftime("%B-%d-%Y %H:%M:%S", $currentTime);
@@ -50,7 +52,7 @@ if (isset($_POST["submit"])) {
     <!-- Nav bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a href="index.html" class="navbar-brand">RAFAELCOSTA.COM</a>
+            <a href="blog.php?page=1" class="navbar-brand">RAFAELCOSTA.COM</a>
             <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapseCms">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -102,6 +104,7 @@ if (isset($_POST["submit"])) {
     <section class="container py-2 mb-4">
         <div class="row">
             <div class="offset-lg-1 col-lg-10">
+
                 <?php
                 echo errorMessage();
                 echo successMessage();
@@ -127,6 +130,43 @@ if (isset($_POST["submit"])) {
                         </div>
                     </div>
                 </form>
+                <table class="table table-striped table-hover my-4">
+                    <thead class="thead-dark">
+                        <h2>Existing categories</h2>
+                        <tr>
+                            <th>Number</th>
+                            <th>Date & Time</th>
+                            <th>Title</th>
+                            <th>Creator</th>
+                            <th>Delete category</th>
+                        </tr>
+
+                    </thead>
+                    <?php
+                    $connect;
+                    $sql = "SELECT * FROM category";
+                    $execute = $connect->query($sql);
+                    $srNo = 0;
+                    while ($dataRows = $execute->fetch()) {
+                        $id = $dataRows["id"];
+                        $dateTime = $dataRows["datetime"];
+                        $title = $dataRows["title"];
+                        $creator = $dataRows["author"];
+                        $srNo++;
+                    ?>
+                        <tbody>
+                            <tr>
+                                <td><?php echo htmlentities($srNo) ?></td>
+                                <td><?php echo htmlentities($dateTime) ?></td>
+                                <td><?php echo htmlentities($title) ?></td>
+                                <td><?php echo htmlentities($creator) ?></td>
+                                <td><a class="btn btn-danger" href="deleteCategory.php?id=<?php echo $id ?>">Delete category</a></td>
+                            </tr>
+                        <?php
+                    }
+                        ?>
+                        </tbody>
+                </table>
             </div>
         </div>
     </section>

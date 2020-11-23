@@ -4,32 +4,41 @@ require_once("include/functions.php");
 require_once("include/sessions.php");
 $_SESSION["trackUrl"] = $_SERVER["PHP_SELF"];
 confirmLogin();
+//Fetching admin data
+$userId = $_SESSION["userId"];
+$connect;
+$sql = "SELECT * FROM admin WHERE id=$userId";
+$stmt = $connect->query($sql);
+while ($dataRows = $stmt->fetch()) {
+    $existingName = $dataRows["name"];
+    $imageToBeUpdated = $dataRows["image"];
+    $id = $dataRows["id"];
+}
+//Fecthing admin data end
 if (isset($_POST["submit"])) {
-    date_default_timezone_set("America/Vancouver");
-    $currentTime = time();
-    $dateTime = strftime("%B-%d-%Y %H:%M:%S", $currentTime);
-    $title = $_POST["postTitle"];
-    $category = $_POST["postCategory"];
-    $author = $_SESSION["username"];
-    $image = $_FILES["postImage"]["name"];
-    $target = "Uploads/".basename($_FILES["postImage"]["name"]);
-    $post = $_POST["postText"];
-    $sql = "INSERT INTO post(dateTime, title, category, author, image, post)
-    VALUES (:datetimE, :titlE, :categorY, :authoR, :imagE, :posT)";
-    $stmt = $connect->prepare($sql);
-    $stmt->bindValue(":datetimE", $dateTime);
-    $stmt->bindValue(":titlE", $title);
-    $stmt->bindValue(":categorY", $category);
-    $stmt->bindValue(":authoR", $author);
-    $stmt->bindValue(":imagE", $image);
-    $stmt->bindValue(":posT", $post);
-    $execute = $stmt->execute();
-    move_uploaded_file($_FILES["postImage"]["tmp_name"], $target);
+    $name = $_POST["name"];
+    $headline = $_POST["headline"];
+    $bio = $_POST["bio"];
+    $image = $_FILES["image"]["name"];
+    $target = "Uploads/" . basename($_FILES["image"]["name"]);
+    if (!empty($image)) {
+        $sql = "UPDATE admin SET name='$name', headline='$headline', bio='$bio', image='$image' WHERE id='$id'";
+        if ($imageToBeUpdated != "avatar.png") {
+            unlink("uploads/$imageToBeUpdated");
+        }
+        move_uploaded_file($_FILES["image"]["tmp_name"], $target);
+    } else {
+        $sql = "UPDATE admin SET name='$name', headline='$headline', bio='$bio', image='avatar.png' WHERE id='$id'";
+        if ($imageToBeUpdated != "avatar.png") {
+            unlink("uploads/$imageToBeUpdated");
+        }
+    }
+    $execute = $connect->query($sql);
     if ($execute) {
-        $_SESSION["success"] = "Post added successfully";
+        $_SESSION["success"] = "Admin edited successfully";
     } else {
         $_SESSION["error"] = "Something went wrong, try again";
-        redirectTo("addNewPost.php");
+        redirectTo("myProfile.php");
     }
 }
 ?>
@@ -39,7 +48,7 @@ if (isset($_POST["submit"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add new post</title>
+    <title>My profile</title>
     <script src="https://kit.fontawesome.com/aa21f35e2c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -91,7 +100,7 @@ if (isset($_POST["submit"])) {
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <h1><i class="fas fa-edit"></i> Add new post</h1>
+                    <h1><i class="fas fa-user"></i> My profile</h1>
                 </div>
             </div>
         </div>
@@ -100,60 +109,62 @@ if (isset($_POST["submit"])) {
     <!-- Main area -->
     <section class="container py-2 mb-4">
         <div class="row">
-            <div class="offset-lg-1 col-lg-10">
+            <!-- Left aerea -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header bg-dark text-light">
+                        <h3><?php echo $existingName ?></h3>
+                    </div>
+                    <div class="card-body">
+                        <?php
+                        if ($imageToBeUpdated == "avatar.png") {
+                            $fileDir = "images/";
+                        } else {
+                            $fileDir = "uploads/";
+                        }
+                        ?>
+                        <img class="block img-fluid mb-2" src="<?php echo $fileDir ?><?php echo $imageToBeUpdated ?>">
+                    </div>
+                    <div class="m-2">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras et tempor velit, et efficitur enim. Nam semper, tellus eu ultrices porta, diam diam maximus metus, a feugiat turpis orci a turpis. Maecenas dictum rutrum neque, vitae consequat massa imperdiet finibus. Nullam porttitor condimentum velit, et feugiat magna congue vitae. Pellentesque pellentesque augue id congue auctor. Quisque condimentum, nisl quis accumsan porta, elit purus consectetur tellus, ac posuere libero magna eu nibh. Mauris egestas pulvinar ante id sodales.
+                    </div>
+                </div>
+            </div>
+            <!-- Left area end -->
+            <!-- Right area -->
+            <div class="col-md-9">
                 <?php
                 echo errorMessage();
                 echo successMessage();
                 ?>
-                <form class="" action="addNewPost.php" method="post" enctype="multipart/form-data">
-                    <div class="card bg-secondary text-light mb-3">
-                        <div class="card-header">
-                            <h1>Add new post</h1>
+                <form class="" action="myProfile.php" method="post" enctype="multipart/form-data">
+                    <div class="card bg-dark text-light">
+                        <div class="card-header bg-secondary text-light">
+                            <h4>Edit profile</h4>
                         </div>
-                        <div class="card-body bg-dark">
+                        <div class="card-body">
                             <div class="form-group">
-                                <label class="" for="title"><span class="fieldInfo"> Post Title: </span></label>
-                                <input class="form-control" type="text" name="postTitle" id="title" placeholder="Title here">
+                                <input class="form-control" type="text" name="name" placeholder="Your name here">
                             </div>
                             <div class="form-group">
-                                <label class="" for="category"><span class="fieldInfo"> Choose category: </span></label>
-                                <select class="form-control" type="text" name="postCategory" id="category">
-                                    <?php
-                                    // Fetching all the categories
-                                    $connect;
-                                    $sql = "SELECT title FROM category";
-                                    $stmt = $connect->query($sql);
-                                    while ($dataRows = $stmt->fetch()) {
-                                        $categoryName = $dataRows["title"];
-
-                                    ?>
-                                        <option>
-                                            <?php
-                                            echo $categoryName;
-                                            ?>
-                                        </option>
-                                    <?php
-                                    }
-                                    ?>
-                                </select>
+                                <input class="form-control" type="text" name="headline" placeholder="Your headline here">
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" type="text" name="bio" placeholder="Your bio here" rows="8" cols="80"></textarea>
                             </div>
                             <div class="form-group">
                                 <label class="" for="image"><span class="fieldInfo"> Upload image: </span></label>
                                 <div class="custom-file">
-                                    <input class="custom-file-input" type="file" name="postImage" id="image">
+                                    <input class="custom-file-input" type="file" name="image">
                                     <label for="image" class="custom-file-label"></label>
                                 </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="" for="post"><span class="fieldInfo"> Post: </span></label>
-                                <textarea class="form-control" type="text" name="postText" id="post" placeholder="Post Here" rows="8" cols="80"></textarea>
                             </div>
                             <div class="row">
                                 <div class="col-lg-6 mb-2">
                                     <a href="dashboard.php" class="btn btn-warning btn-block"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
                                 </div>
                                 <div class="col-lg-6 mb-2">
-                                    <button type="submit" name="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Publish</button>
+                                    <button type="submit" name="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Update</button>
                                 </div>
                             </div>
                         </div>
@@ -162,6 +173,7 @@ if (isset($_POST["submit"])) {
             </div>
         </div>
     </section>
+    <!-- Right area end -->
     <!-- Main area end -->
     <!-- Footer -->
     <footer class="bg-dark text-white">

@@ -11,7 +11,7 @@ confirmLogin();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Posts</title>
+    <title>Dashboard</title>
     <script src="https://kit.fontawesome.com/aa21f35e2c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -63,7 +63,7 @@ confirmLogin();
         <div class="container">
             <div class="row">
                 <div class="col-md-12 mb-2">
-                    <h1><i class="fas fa-blog"></i> Blog posts</h1>
+                    <h1><i class="fas fa-cog"></i> Dashboard</h1>
                 </div>
                 <div class="col-lg-3 mb-2">
                     <a href="addNewPost.php" class="btn btn-primary btn-block"><i class="fas fa-edit"></i> Add new post</a>
@@ -84,91 +84,120 @@ confirmLogin();
     <!-- Main area -->
     <section class="container py-2 mb-4">
         <div class="row">
-            <div class="col-lg-12">
-                <?php
-                echo errorMessage();
-                echo successMessage();
-                ?>
-                <table class="table table-striped table-hover">
+            <?php
+            echo errorMessage();
+            echo successMessage();
+            ?>
+            <!-- Side area -->
+            <div class="col-lg-2 d-none d-md-block">
+                <div class="card text-center bg-dark text-white mb-3">
+                    <div class="card-body">
+                        <h1 class="lead">Posts</h1>
+                        <h4 class="display-5">
+                            <i class="fab fa-readme"></i>
+                            <?php 
+                            $connect;
+                            $sql = "SELECT * from post";
+                            $stmt = $connect->query($sql);
+                            $result = $stmt->rowCount();
+                            echo $result;
+                            ?>
+                        </h4>
+                    </div>
+                </div>
+                <div class="card text-center bg-dark text-white mb-3">
+                    <div class="card-body">
+                        <h1 class="lead">Categories</h1>
+                        <h4 class="display-5">
+                            <i class="fas fa-folder"></i>
+                            <?php 
+                            $connect;
+                            $sql = "SELECT * from category";
+                            $stmt = $connect->query($sql);
+                            $result = $stmt->rowCount();
+                            echo $result;
+                            ?>
+                        </h4>
+                    </div>
+                </div>
+                <div class="card text-center bg-dark text-white mb-3">
+                    <div class="card-body">
+                        <h1 class="lead">Admins</h1>
+                        <h4 class="display-5">
+                            <i class="fas fa-users"></i>
+                            <?php 
+                            $connect;
+                            $sql = "SELECT * from admin";
+                            $stmt = $connect->query($sql);
+                            $result = $stmt->rowCount();
+                            echo $result;
+                            ?>
+                        </h4>
+                    </div>
+                </div>
+                <div class="card text-center bg-dark text-white mb-3">
+                    <div class="card-body">
+                        <h1 class="lead">Comments</h1>
+                        <h4 class="display-5">
+                            <i class="fas fa-comment"></i>
+                            <?php 
+                            $connect;
+                            $sql = "SELECT * from comment";
+                            $stmt = $connect->query($sql);
+                            $result = $stmt->rowCount();
+                            echo $result;
+                            ?>
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <!-- Side area end -->
+            <!-- Main area -->
+            <div class="col-lg-10">
+                <h1 class="">Top posts</h1>
+                <table class="table table-striped table-hover my-4">
                     <thead class="thead-dark">
                         <tr>
-                            <th>#</th>
+                            <th>Number</th>
+                            <th>Date & Time</th>
                             <th>Title</th>
-                            <th>Category</th>
-                            <th>Date&Time</th>
                             <th>Author</th>
-                            <th>Banner</th>
                             <th>Comments</th>
-                            <th>Action</th>
-                            <th>Live Preview</th>
+                            <th>Details</th>
                         </tr>
+
                     </thead>
                     <?php
                     $connect;
-                    $sql = "SELECT * FROM post";
-                    $stmt = $connect->query($sql);
-                    $sr = 0;
-                    while ($dataRows = $stmt->fetch()) {
+                    $sql = "SELECT * FROM post ORDER BY id desc LIMIT 0,5";
+                    $execute = $connect->query($sql);
+                    $srNo = 0;
+                    while ($dataRows = $execute->fetch()) {
                         $id = $dataRows["id"];
                         $dateTime = $dataRows["dateTime"];
-                        $postTitle = $dataRows["title"];
-                        $category = $dataRows["category"];
-                        $admin = $dataRows["author"];
-                        $image = $dataRows["image"];
-                        $postText = $dataRows["post"];
-                        $sr++;
-
-
+                        $title = $dataRows["title"];
+                        $author = $dataRows["author"];
+                        $srNo++;
                     ?>
-                        <tbody class="tbody-dark">
+                        <tbody>
                             <tr>
-                                <td><?php echo $sr ?></td>
+                                <td><?php echo htmlentities($srNo) ?></td>
+                                <td><?php echo htmlentities($dateTime) ?></td>
+                                <td><?php echo htmlentities($title) ?></td>
+                                <td><?php echo htmlentities($author) ?></td>
                                 <td>
-                                    <?php
-                                    if (strlen($postTitle) > 20) {
-                                        $postTitle = substr($postTitle, 0, 7) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $postTitle ?>
+                                    <span class="badge badge-success"><?php echo countComment($id) ?></span>
+                                    <span class="badge badge-danger"><?php echo countCommentOFF($id) ?></span>
                                 </td>
-                                <td>
-                                    <?php
-                                    if (strlen($category) > 6) {
-                                        $category = substr($category, 0, 6) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $category ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    if (strlen($dateTime) > 11) {
-                                        $dateTime = substr($dateTime, 0, 11) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $dateTime ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    if (strlen($admin) > 6) {
-                                        $admin = substr($admin, 0, 6) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $admin ?>
-                                </td>
-                                <td><img src="uploads/<?php echo $image ?>" width="170px" height="50px"></td>
-                                <td>Comments</td>
-                                <td>
-                                    <a href="editPost.php?id=<?php echo $id ?>"><span class="btn btn-warning mb-2">Edit</span></a>
-                                    <a href="deletePost.php?id=<?php echo $id ?>"><span class="btn btn-danger mb-2">Delete</span></a>
-                                </td>
-                                <td><a href="fullPost.php?id=<?php echo $id ?>"><span class="btn btn-primary">Live preview</span></a></td>
+                                <td><a class="btn btn-primary" href="fullPost.php?id=<?php echo $id ?>">Live Preview</a></td>
                             </tr>
-                        </tbody>
-                    <?php
+                        <?php
                     }
-                    ?>
+                        ?>
+                        </tbody>
                 </table>
             </div>
+            <!-- Main area end -->
         </div>
     </section>
     <!-- Main area end -->

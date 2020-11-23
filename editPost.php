@@ -2,32 +2,41 @@
 require_once("include/db.php");
 require_once("include/functions.php");
 require_once("include/sessions.php");
+$_SESSION["trackUrl"] = $_SERVER["PHP_SELF"];
+confirmLogin();
+//Fetching Data
+$idFromUrl = $_GET["id"];
+$sql = "SELECT * FROM post WHERE id=$idFromUrl";
+$stmt = $connect->query($sql);
+while ($dataRows = $stmt->fetch()) {
+    $titleToBeUpdated = $dataRows["title"];
+    $categoryToBeUpdated = $dataRows["category"];
+    $imageToBeUpdated = $dataRows["image"];
+    $postToBeUpdated = $dataRows["post"];
+}
+
+
+$searchQueryParameter = $_GET["id"];
 if (isset($_POST["submit"])) {
-    date_default_timezone_set("America/Vancouver");
-    $currentTime = time();
-    $dateTime = strftime("%B-%d-%Y %H:%M:%S", $currentTime);
+    $connect;
     $title = $_POST["postTitle"];
     $category = $_POST["postCategory"];
-    $author = "Rafael";
     $image = $_FILES["postImage"]["name"];
     $target = "Uploads/" . basename($_FILES["postImage"]["name"]);
     $post = $_POST["postText"];
-    $sql = "INSERT INTO post(dateTime, title, category, author, image, post)
-    VALUES (:datetimE, :titlE, :categorY, :authoR, :imagE, :posT)";
-    $stmt = $connect->prepare($sql);
-    $stmt->bindValue(":datetimE", $dateTime);
-    $stmt->bindValue(":titlE", $title);
-    $stmt->bindValue(":categorY", $category);
-    $stmt->bindValue(":authoR", $author);
-    $stmt->bindValue(":imagE", $image);
-    $stmt->bindValue(":posT", $post);
-    $execute = $stmt->execute();
-    move_uploaded_file($_FILES["postImage"]["tmp_name"], $target);
+    if (!empty($image)) {
+        $sql = "UPDATE post SET title='$title', category='$category', image='$image', post='$post' WHERE id='$searchQueryParameter'";
+        unlink("uploads/$imageToBeUpdated");
+        move_uploaded_file($_FILES["postImage"]["tmp_name"], $target);
+    } else {
+        $sql = "UPDATE post SET title='$title', category='$category', post='$post' WHERE id='$searchQueryParameter'";
+    }
+    $execute = $connect->query($sql);
     if ($execute) {
-        $_SESSION["success"] = "Post added successfully";
+        $_SESSION["success"] = "Post edited successfully";
     } else {
         $_SESSION["error"] = "Something went wrong, try again";
-        redirectTo("addNewPost.php");
+        redirectTo("posts.php");
     }
 }
 ?>
@@ -37,7 +46,7 @@ if (isset($_POST["submit"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categories</title>
+    <title>Edit post</title>
     <script src="https://kit.fontawesome.com/aa21f35e2c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -47,7 +56,7 @@ if (isset($_POST["submit"])) {
     <!-- Nav bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a href="index.html" class="navbar-brand">RAFAELCOSTA.COM</a>
+            <a href="blog.php?page=1" class="navbar-brand">RAFAELCOSTA.COM</a>
             <button class="navbar-toggler" data-toggle="collapse" data-target="#navbarCollapseCms">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -103,20 +112,7 @@ if (isset($_POST["submit"])) {
                 echo errorMessage();
                 echo successMessage();
                 ?>
-                <?php
-                //Fetching Data
-                $idFromUrl = $_GET["id"];
-                $sql = "SELECT * FROM post WHERE id=$idFromUrl";
-                $stmt = $connect->query($sql);
-                while ($dataRows = $stmt->fetch()) {
-                    $title = $dataRows["title"];
-                    $category = $dataRows["category"];
-                    $image = $dataRows["image"];
-                    $post = $dataRows["post"];
-                }
-
-                ?>
-                <form class="" action="editPost.php" method="post" enctype="multipart/form-data">
+                <form class="" action="editPost.php?id=<?php echo $searchQueryParameter ?>" method="post" enctype="multipart/form-data">
                     <div class="card bg-secondary text-light mb-3">
                         <div class="card-header">
                             <h1>Edit post</h1>
@@ -124,9 +120,12 @@ if (isset($_POST["submit"])) {
                         <div class="card-body bg-dark">
                             <div class="form-group">
                                 <label class="" for="title"><span class="fieldInfo"> Post Title: </span></label>
-                                <input class="form-control" type="text" name="postTitle" id="title" placeholder="Title here" value="<?php echo $title ?>">
+                                <input class="form-control" type="text" name="postTitle" id="title" placeholder="Title here" value="<?php echo $titleToBeUpdated ?>">
                             </div>
                             <div class="form-group">
+                                <span class="fieldInfo">Existing category: </span>
+                                <?php echo $categoryToBeUpdated ?>
+                                <br>
                                 <label class="" for="category"><span class="fieldInfo"> Choose category: </span></label>
                                 <select class="form-control" type="text" name="postCategory" id="category">
                                     <?php
@@ -149,22 +148,25 @@ if (isset($_POST["submit"])) {
                                 </select>
                             </div>
                             <div class="form-group">
+                                <span class="fieldInfo">Existing image: </span>
+                                <img src="uploads/<?php echo $imageToBeUpdated ?>" width="170px" height="70px">
+                                <br>
                                 <label class="" for="image"><span class="fieldInfo"> Upload image: </span></label>
                                 <div class="custom-file">
-                                    <input class="custom-file-input" type="file" name="postImage" id="image" value="<?php echo $image ?>">
+                                    <input class="custom-file-input" type="file" name="postImage" id="image" value="<?php echo $imageToBeUpdated ?>">
                                     <label for="image" class="custom-file-label"></label>
                                 </div>
                             </div>
                             <div class="form-group">
                                 <label class="" for="post"><span class="fieldInfo"> Post: </span></label>
-                                <textarea class="form-control" type="text" name="postText" id="post" placeholder="Post Here" rows="8" cols="80" value="<?php echo $post ?>"></textarea>
+                                <textarea class="form-control" type="text" name="postText" id="post" placeholder="Post Here" rows="8" cols="80"><?php echo $postToBeUpdated ?></textarea>
                             </div>
                             <div class="row">
                                 <div class="col-lg-6 mb-2">
                                     <a href="dashboard.php" class="btn btn-warning btn-block"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
                                 </div>
                                 <div class="col-lg-6 mb-2">
-                                    <button type="submit" name="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Publish</button>
+                                    <button type="submit" name="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Edit post</button>
                                 </div>
                             </div>
                         </div>

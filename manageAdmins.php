@@ -8,28 +8,36 @@ if (isset($_POST["submit"])) {
     date_default_timezone_set("America/Vancouver");
     $currentTime = time();
     $dateTime = strftime("%B-%d-%Y %H:%M:%S", $currentTime);
-    $title = $_POST["postTitle"];
-    $category = $_POST["postCategory"];
-    $author = $_SESSION["username"];
-    $image = $_FILES["postImage"]["name"];
-    $target = "Uploads/".basename($_FILES["postImage"]["name"]);
-    $post = $_POST["postText"];
-    $sql = "INSERT INTO post(dateTime, title, category, author, image, post)
-    VALUES (:datetimE, :titlE, :categorY, :authoR, :imagE, :posT)";
-    $stmt = $connect->prepare($sql);
-    $stmt->bindValue(":datetimE", $dateTime);
-    $stmt->bindValue(":titlE", $title);
-    $stmt->bindValue(":categorY", $category);
-    $stmt->bindValue(":authoR", $author);
-    $stmt->bindValue(":imagE", $image);
-    $stmt->bindValue(":posT", $post);
-    $execute = $stmt->execute();
-    move_uploaded_file($_FILES["postImage"]["tmp_name"], $target);
-    if ($execute) {
-        $_SESSION["success"] = "Post added successfully";
+    $username = $_POST["username"];
+    $password = $_POST["password"];
+    $confirmPassword = $_POST["confirmPassword"];
+    $name = $_POST["name"];
+    $addedBy = $_SESSION["username"];
+    if (empty($username) || empty($password) || empty($confirmPassword)) {
+        $_SESSION["error"] = "All fields must be filled out";
+        redirectTo("manageAdmins.php");
+    } else if ($password != $confirmPassword) {
+        $_SESSION["error"] = "Passwords should match";
+        redirectTo("manageAdmins.php");
+    } else if (checkUsername($username)) {
+        $_SESSION["error"] = "Username already exists";
+        redirectTo("manageAdmins.php");
     } else {
-        $_SESSION["error"] = "Something went wrong, try again";
-        redirectTo("addNewPost.php");
+        $sql = "INSERT INTO admin (dateTime, username, password, name, addedBy)";
+        $sql .= "VALUES(:datetimE,:usernamE, :passworD, :namE, :addedbY)";
+        $stmt = $connect->prepare($sql);
+        $stmt->bindValue(":datetimE", $dateTime);
+        $stmt->bindValue(":usernamE", $username);
+        $stmt->bindValue(":passworD", $password);
+        $stmt->bindValue(":namE", $name);
+        $stmt->bindValue(":addedbY", $addedBy);
+        $execute = $stmt->execute();
+        if ($execute) {
+            $_SESSION["success"] = "Admin added successfully";
+        } else {
+            $_SESSION["error"] = "Something went wrong, try again";
+            redirectTo("manageAdmins.php");
+        }
     }
 }
 ?>
@@ -39,7 +47,7 @@ if (isset($_POST["submit"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add new post</title>
+    <title>Manage admins</title>
     <script src="https://kit.fontawesome.com/aa21f35e2c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -91,7 +99,7 @@ if (isset($_POST["submit"])) {
         <div class="container">
             <div class="row">
                 <div class="col">
-                    <h1><i class="fas fa-edit"></i> Add new post</h1>
+                    <h1><i class="fas fa-user"></i> Manage admins</h1>
                 </div>
             </div>
         </div>
@@ -105,60 +113,80 @@ if (isset($_POST["submit"])) {
                 echo errorMessage();
                 echo successMessage();
                 ?>
-                <form class="" action="addNewPost.php" method="post" enctype="multipart/form-data">
+                <form class="" action="manageAdmins.php" method="post">
                     <div class="card bg-secondary text-light mb-3">
                         <div class="card-header">
-                            <h1>Add new post</h1>
+                            <h1>Add new admin</h1>
                         </div>
                         <div class="card-body bg-dark">
                             <div class="form-group">
-                                <label class="" for="title"><span class="fieldInfo"> Post Title: </span></label>
-                                <input class="form-control" type="text" name="postTitle" id="title" placeholder="Title here">
+                                <label class="" for="username"><span class="fieldInfo"> Username: </span></label>
+                                <input class="form-control" type="text" name="username">
                             </div>
                             <div class="form-group">
-                                <label class="" for="category"><span class="fieldInfo"> Choose category: </span></label>
-                                <select class="form-control" type="text" name="postCategory" id="category">
-                                    <?php
-                                    // Fetching all the categories
-                                    $connect;
-                                    $sql = "SELECT title FROM category";
-                                    $stmt = $connect->query($sql);
-                                    while ($dataRows = $stmt->fetch()) {
-                                        $categoryName = $dataRows["title"];
-
-                                    ?>
-                                        <option>
-                                            <?php
-                                            echo $categoryName;
-                                            ?>
-                                        </option>
-                                    <?php
-                                    }
-                                    ?>
-                                </select>
+                                <label class="" for="name"><span class="fieldInfo"> Name: </span></label>
+                                <input class="form-control" type="text" name="name">
+                                <small class="text-warning text-muted">Optional</small>
                             </div>
                             <div class="form-group">
-                                <label class="" for="image"><span class="fieldInfo"> Upload image: </span></label>
-                                <div class="custom-file">
-                                    <input class="custom-file-input" type="file" name="postImage" id="image">
-                                    <label for="image" class="custom-file-label"></label>
-                                </div>
+                                <label class="" for="password"><span class="fieldInfo"> Password: </span></label>
+                                <input class="form-control" type="password" name="password">
                             </div>
                             <div class="form-group">
-                                <label class="" for="post"><span class="fieldInfo"> Post: </span></label>
-                                <textarea class="form-control" type="text" name="postText" id="post" placeholder="Post Here" rows="8" cols="80"></textarea>
+                                <label class="" for="confirmPassword"><span class="fieldInfo"> Confirm Password: </span></label>
+                                <input class="form-control" type="password" name="confirmPassword">
                             </div>
                             <div class="row">
                                 <div class="col-lg-6 mb-2">
                                     <a href="dashboard.php" class="btn btn-warning btn-block"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
                                 </div>
                                 <div class="col-lg-6 mb-2">
-                                    <button type="submit" name="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Publish</button>
+                                    <button type="submit" name="submit" class="btn btn-success btn-block"><i class="fas fa-check"></i> Add new admin</button>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </form>
+                <table class="table table-striped table-hover my-4">
+                    <thead class="thead-dark">
+                        <h2>Existing admins</h2>
+                        <tr>
+                            <th>Number</th>
+                            <th>Date & Time</th>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Added by</th>
+                            <th>Delete admin</th>
+                        </tr>
+
+                    </thead>
+                    <?php
+                    $connect;
+                    $sql = "SELECT * FROM admin";
+                    $execute = $connect->query($sql);
+                    $srNo = 0;
+                    while ($dataRows = $execute->fetch()) {
+                        $id = $dataRows["id"];
+                        $dateTime = $dataRows["dateTime"];
+                        $username = $dataRows["username"];
+                        $name = $dataRows["name"];
+                        $addedBy = $dataRows["addedBy"];
+                        $srNo++;
+                    ?>
+                        <tbody>
+                            <tr>
+                                <td><?php echo htmlentities($srNo) ?></td>
+                                <td><?php echo htmlentities($dateTime) ?></td>
+                                <td><?php echo htmlentities($username) ?></td>
+                                <td><?php echo htmlentities($name) ?></td>
+                                <td><?php echo htmlentities($addedBy) ?></td>
+                                <td><a class="btn btn-danger" href="deleteAdmin.php?id=<?php echo $id ?>">Delete admin</a></td>
+                            </tr>
+                        <?php
+                    }
+                        ?>
+                        </tbody>
+                </table>
             </div>
         </div>
     </section>

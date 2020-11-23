@@ -11,7 +11,7 @@ confirmLogin();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog Posts</title>
+    <title>Comments</title>
     <script src="https://kit.fontawesome.com/aa21f35e2c.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css" integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
     <link rel="stylesheet" href="css/styles.css">
@@ -62,20 +62,8 @@ confirmLogin();
     <header class="bg-dark text-white py-3">
         <div class="container">
             <div class="row">
-                <div class="col-md-12 mb-2">
-                    <h1><i class="fas fa-blog"></i> Blog posts</h1>
-                </div>
-                <div class="col-lg-3 mb-2">
-                    <a href="addNewPost.php" class="btn btn-primary btn-block"><i class="fas fa-edit"></i> Add new post</a>
-                </div>
-                <div class="col-lg-3 mb-2">
-                    <a href="categories.php" class="btn btn-info btn-block"><i class="fas fa-folder-plus"></i> Add new category</a>
-                </div>
-                <div class="col-lg-3 mb-2">
-                    <a href="manageAdmins.php" class="btn btn-warning btn-block"><i class="fas fa-user-plus"></i> Add new admin</a>
-                </div>
-                <div class="col-lg-3 mb-2">
-                    <a href="comments.php" class="btn btn-success btn-block"><i class="fas fa-check"></i> Aprove comments</a>
+                <div class="col">
+                    <h1><i class="fas fa-comments"></i> Manage comments</h1>
                 </div>
             </div>
         </div>
@@ -89,86 +77,108 @@ confirmLogin();
                 echo errorMessage();
                 echo successMessage();
                 ?>
-                <table class="table table-striped table-hover">
+                <table class="table table-striped table-hover my-4">
                     <thead class="thead-dark">
+                        <h2>Unapproved comments</h2>
                         <tr>
-                            <th>#</th>
-                            <th>Title</th>
-                            <th>Category</th>
-                            <th>Date&Time</th>
-                            <th>Author</th>
-                            <th>Banner</th>
-                            <th>Comments</th>
-                            <th>Action</th>
-                            <th>Live Preview</th>
+                            <th>Number</th>
+                            <th>Name</th>
+                            <th>Date & Time</th>
+                            <th>Post</th>
+                            <th>Comment</th>
+                            <th>Approve</th>
+                            <th>Delete</th>
+                            <th>Details</th>
                         </tr>
+
                     </thead>
                     <?php
                     $connect;
-                    $sql = "SELECT * FROM post";
-                    $stmt = $connect->query($sql);
-                    $sr = 0;
-                    while ($dataRows = $stmt->fetch()) {
+                    $sql = "SELECT * FROM comment WHERE status='OFF'";
+                    $execute = $connect->query($sql);
+                    $srNo = 0;
+                    while ($dataRows = $execute->fetch()) {
                         $id = $dataRows["id"];
                         $dateTime = $dataRows["dateTime"];
-                        $postTitle = $dataRows["title"];
-                        $category = $dataRows["category"];
-                        $admin = $dataRows["author"];
-                        $image = $dataRows["image"];
-                        $postText = $dataRows["post"];
-                        $sr++;
-
-
+                        $name = $dataRows["name"];
+                        $comment = $dataRows["comment"];
+                        $postId = $dataRows["postId"];
+                        $srNo++;
+                        if (strlen($name) > 10) {
+                            $name = substr($name, 0, 10) . "...";
+                        }
+                        if (strlen($comment) > 15) {
+                            $comment = substr($comment, 0, 15) . "...";
+                        }
                     ?>
-                        <tbody class="tbody-dark">
+                        <tbody>
                             <tr>
-                                <td><?php echo $sr ?></td>
-                                <td>
-                                    <?php
-                                    if (strlen($postTitle) > 20) {
-                                        $postTitle = substr($postTitle, 0, 7) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $postTitle ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    if (strlen($category) > 6) {
-                                        $category = substr($category, 0, 6) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $category ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    if (strlen($dateTime) > 11) {
-                                        $dateTime = substr($dateTime, 0, 11) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $dateTime ?>
-                                </td>
-                                <td>
-                                    <?php
-                                    if (strlen($admin) > 6) {
-                                        $admin = substr($admin, 0, 6) . "...";
-                                    }
-                                    ?>
-                                    <?php echo $admin ?>
-                                </td>
-                                <td><img src="uploads/<?php echo $image ?>" width="170px" height="50px"></td>
-                                <td>Comments</td>
-                                <td>
-                                    <a href="editPost.php?id=<?php echo $id ?>"><span class="btn btn-warning mb-2">Edit</span></a>
-                                    <a href="deletePost.php?id=<?php echo $id ?>"><span class="btn btn-danger mb-2">Delete</span></a>
-                                </td>
-                                <td><a href="fullPost.php?id=<?php echo $id ?>"><span class="btn btn-primary">Live preview</span></a></td>
+                                <td><?php echo htmlentities($srNo) ?></td>
+                                <td><?php echo htmlentities($name) ?></td>
+                                <td><?php echo htmlentities($dateTime) ?></td>
+                                <td><?php echo htmlentities($postId) ?></td>
+                                <td><?php echo htmlentities($comment) ?></td>
+                                <td><a class="btn btn-success" href="approveComment.php?id=<?php echo $id ?>">Approve comment</a></td>
+                                <td><a class="btn btn-danger" href="deleteComment.php?id=<?php echo $id ?>">Delete comment</a></td>
+                                <td><a href="fullComment.php?id=<?php echo $id ?>" class="btn btn-primary">Live Preview</a></td>
                             </tr>
-                        </tbody>
-                    <?php
+                        <?php
                     }
+                        ?>
+                        </tbody>
+                </table>
+                <table class="table table-striped table-hover my-4">
+                    <thead class="thead-dark">
+                        <h2>Approved comments</h2>
+                        <tr>
+                            <th>Number</th>
+                            <th>Name</th>
+                            <th>Date & Time</th>
+                            <th>Post</th>
+                            <th>Comment</th>
+                            <th>Disapprove</th>
+                            <th>Delete</th>
+                            <th>Details</th>
+                        </tr>
+
+                    </thead>
+                    <?php
+                    $connect;
+                    $sql = "SELECT * FROM comment WHERE status='ON'";
+                    $execute = $connect->query($sql);
+                    $srNo = 0;
+                    while ($dataRows = $execute->fetch()) {
+                        $id = $dataRows["id"];
+                        $dateTime = $dataRows["dateTime"];
+                        $name = $dataRows["name"];
+                        $comment = $dataRows["comment"];
+                        $postId = $dataRows["postId"];
+                        $srNo++;
+                        if (strlen($name) > 10) {
+                            $name = substr($name, 0, 10) . "...";
+                        }
+                        if (strlen($comment) > 15) {
+                            $comment = substr($comment, 0, 15) . "...";
+                        }
                     ?>
+                        <tbody>
+                            <tr>
+                                <td><?php echo htmlentities($srNo) ?></td>
+                                <td><?php echo htmlentities($name) ?></td>
+                                <td><?php echo htmlentities($dateTime) ?></td>
+                                <td><?php echo htmlentities($postId) ?></td>
+                                <td><?php echo htmlentities($comment) ?></td>
+                                <td><a class="btn btn-warning" href="disapproveComment.php?id=<?php echo $id ?>">Disapprove comment</a></td>
+                                <td><a class="btn btn-danger" href="deleteComment.php?id=<?php echo $id ?>">Delete comment</a></td>
+                                <td><a href="fullComment.php?id=<?php echo $id ?>" class="btn btn-primary">Live Preview</a></td>
+                            </tr>
+                        <?php
+                    }
+                        ?>
+                        </tbody>
                 </table>
             </div>
+
         </div>
     </section>
     <!-- Main area end -->

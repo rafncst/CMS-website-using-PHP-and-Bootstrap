@@ -3,3 +3,25 @@
     font-family: Bitter, Georgia, 'Times New Roman', Times, serif;
     font-size: 1.2em;
 }
+
+textarea {
+    resize: none;
+}
+
+.commentBlock {
+    background-color: #f6F7F9;
+}
+
+#min {
+    min-height: 603px;
+}
+
+.heading {
+    font-family: Georgia, 'Times New Roman', Times, serif;
+    font-weight: bold;
+    color: #005E90;
+}
+
+.heading:hover {
+    color: #0090DB;
+}
